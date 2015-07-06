@@ -30,22 +30,25 @@ public class MultipleFilesOpener {
 		long total_records = 0;
 		
 		long region_1_counter = 0;
-		float reg_1_lat_top = (float) 71.4;
-		float reg_1_lat_bottom = (float) 69.0;
-		float reg_1_long_left = (float) 152.0;
-		float reg_1_long_right = (float) 162.0;
+		Region region1 = new Region((float)71.4, (float)69.0, (float)152.0, (float)162.0);
+//		float reg_1_lat_top = (float) 71.4;
+//		float reg_1_lat_bottom = (float) 69.0;
+//		float reg_1_long_left = (float) 152.0;
+//		float reg_1_long_right = (float) 162.0;
 		
 		long region_2_counter = 0;
-		float reg_2_lat_top = (float) -1.6;
-		float reg_2_lat_bottom = (float) -3.6;
-		float reg_2_long_left = (float) -61.5;
-		float reg_2_long_right = (float) -59.0;
+		Region region2 = new Region((float)-1.6, (float)-3.6, (float)-61.5, (float)-59.0);
+//		float reg_2_lat_top = (float) -1.6;
+//		float reg_2_lat_bottom = (float) -3.6;
+//		float reg_2_long_left = (float) -61.5;
+//		float reg_2_long_right = (float) -59.0;
 		
 		long region_3_counter = 0;
-		float reg_3_lat_top = 0;
-		float reg_3_lat_bottom = 0;
-		float reg_3_long_left = 0;
-		float reg_3_long_right = 0;
+		Region region3 = new Region((float)36.5, (float)34.5, (float)-99.5, (float)-96.5);
+//		float reg_3_lat_top = (float) 36.5;
+//		float reg_3_lat_bottom = (float) 34.5;
+//		float reg_3_long_left = (float) -99.5;
+//		float reg_3_long_right = (float) -96.5;
 		
 		
 		try {			
@@ -92,27 +95,15 @@ public class MultipleFilesOpener {
 					// Process data
 					for (int i = 0; i < latitude_data.length; i++) {
 						
-						if (latitude_data[i] >= reg_1_lat_bottom && 
-								latitude_data[i] <= reg_1_lat_top && 
-								longitude_data[i] >= reg_1_long_left &&
-								longitude_data[i] <= reg_1_long_right) {
-							
+						if (region1.inRegion(latitude_data[i], longitude_data[i])) {				
 							region_1_counter++;
 						}
 						
-						if (latitude_data[i] <= reg_2_lat_bottom && 
-								latitude_data[i] >= reg_2_lat_top && 
-								longitude_data[i] <= reg_2_long_left &&
-								longitude_data[i] >= reg_2_long_right) {
-							
+						if (region2.inRegion(latitude_data[i], longitude_data[i])) {				
 							region_2_counter++;
 						}
 						
-						if (latitude_data[i] >= reg_3_lat_bottom && 
-								latitude_data[i] <= reg_3_lat_top && 
-								longitude_data[i] >= reg_3_long_left &&
-								longitude_data[i] <= reg_3_long_right) {
-							
+						if (region3.inRegion(latitude_data[i], longitude_data[i])) {				
 							region_3_counter++;
 						}
 					}
@@ -137,6 +128,7 @@ public class MultipleFilesOpener {
 			System.out.println("Total number of samples: " + total_records);
 			System.out.println("Number of samples in region 1: " + region_1_counter);
 			System.out.println("Number of samples in region 2: " + region_2_counter);
+			System.out.println("Number of samples in region 3: " + region_3_counter);
 			
 		} catch (Exception e) {
 			e.printStackTrace();

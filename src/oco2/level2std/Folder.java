@@ -28,7 +28,7 @@ class Folder {
             if (entry.isDirectory()) {
                 subFolders.add(Folder.fromDirectory(entry));
             } else if (entry.isFile() && entry.getName().endsWith(".h5")){
-                documents.add(Document.fromFile(entry));
+                documents.add(new Document(entry.getPath()));
             }
         }
         return new Folder(subFolders, documents);

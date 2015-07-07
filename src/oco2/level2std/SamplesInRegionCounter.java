@@ -6,14 +6,95 @@ import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
+import ncsa.hdf.hdf5lib.H5;
+import ncsa.hdf.object.Dataset;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.h5.H5File;
+
 public class SamplesInRegionCounter {
 	
     Long occurrencesCount(Document document, Region region) {
-        long count = 0;
-        for (int i = 0; i < document.getLatitude_data().length; i++) {
-        	if (region.inRegion(document.getLatitude_data()[i], document.getLongitude_data()[i]))
-        		count += 1;
-        }
+        
+    	String DATASETNAME_LAT = "RetrievalGeometry/retrieval_latitude";
+    	String DATASETNAME_LONG = "RetrievalGeometry/retrieval_longitude";
+    	
+		H5File file = null;
+		Dataset latitude = null;
+		Dataset longitude = null;
+		int latitude_dataspace_id = -1;
+		int longitude_dataspace_id = -1;
+		int latitude_dataset_id = -1;
+		int longitude_dataset_id = -1;
+		long[] latitude_dims = { 1 };
+		long[] longitude_dims = { 1 };
+		float[] latitude_data;
+		float[] longitude_data;   	
+    	long count = 0;
+    	
+    	try {
+
+    		// Open an existing file in the folder it is located.
+    		file = new H5File(document.getFileName(), FileFormat.READ);
+    		file.open();
+
+    		// Open latitude dataset.
+    		latitude = (Dataset) file.get(DATASETNAME_LAT);
+    		latitude_dataset_id = latitude.open();
+
+    		// Open longitude dataset.
+    		longitude = (Dataset) file.get(DATASETNAME_LONG);
+    		longitude_dataset_id = longitude.open();
+
+    		// Get latitude dataspace and allocate memory for the read buffer.
+    		if (latitude_dataset_id >= 0)
+    			latitude_dataspace_id = H5.H5Dget_space(latitude_dataset_id);
+    		if (latitude_dataspace_id >= 0)
+    			H5.H5Sget_simple_extent_dims(latitude_dataspace_id, latitude_dims, null);
+
+    		// Get longitude dataspace and allocate memory for the read buffer.
+    		if (longitude_dataset_id >= 0)
+    			longitude_dataspace_id = H5.H5Dget_space(longitude_dataset_id);
+    		if (longitude_dataset_id >= 0)
+    			H5.H5Sget_simple_extent_dims(longitude_dataspace_id, longitude_dims, null);
+
+    		// Allocate array of pointers to rows.
+    		latitude_data = new float[(int) latitude_dims[0]];
+    		longitude_data = new float[(int) longitude_dims[0]];
+
+    		// Read the data using the default properties.
+    		latitude.init();
+    		latitude_data = (float[]) latitude.getData();
+
+    		longitude.init();
+    		longitude_data = (float[]) longitude.getData();
+
+    		// Process data
+    		for (int i = 0; i < latitude_data.length; i++) {
+
+    			if (region.inRegion(latitude_data[i], longitude_data[i])) {				
+    				count++;
+    			}
+    		}
+
+    		// End access to the latitude dataset and release resources used by it.
+    		if (latitude_dataset_id >= 0)
+    			latitude.close(latitude_dataset_id);
+    		if (latitude_dataspace_id >= 0)
+    			H5.H5Sclose(latitude_dataspace_id);
+
+    		// End access to the longitude dataset and release resources used by it.
+    		if (longitude_dataset_id >= 0)
+    			longitude.close(longitude_dataset_id);
+    		if (longitude_dataspace_id >= 0)
+    			H5.H5Sclose(longitude_dataspace_id);
+
+    		// Close the file.
+    		file.close();
+    		
+    	} catch (Exception e) {
+    			e.printStackTrace();
+    	}
+		
         return count;
     }
     
@@ -97,28 +178,28 @@ public class SamplesInRegionCounter {
         long[] singleThreadTimes = new long[repeatCount];
         long[] forkedThreadTimes = new long[repeatCount];
         
-        for (int i = 0; i < repeatCount; i++) {
-            startTime = System.currentTimeMillis();
-            counts = samplesInRegionCounter.countOccurrencesOnSingleThread(folder, region1);
-            stopTime = System.currentTimeMillis();
-            singleThreadTimes[i] = (stopTime - startTime);
-            System.out.println(counts + " , single thread search took " + singleThreadTimes[i] + "ms");
-        }
+//        for (int i = 0; i < repeatCount; i++) {
+//            startTime = System.currentTimeMillis();
+//            counts = samplesInRegionCounter.countOccurrencesOnSingleThread(folder, region1);
+//            stopTime = System.currentTimeMillis();
+//            singleThreadTimes[i] = (stopTime - startTime);
+//            System.out.println(counts + " , single thread search took " + singleThreadTimes[i] + "ms");
+//        }
         
         for (int i = 0; i < repeatCount; i++) {
             startTime = System.currentTimeMillis();
             counts = samplesInRegionCounter.countOccurrencesInParallel(folder, region1);
             stopTime = System.currentTimeMillis();
             forkedThreadTimes[i] = (stopTime - startTime);
-            System.out.println(counts + " , fork / join search took " + forkedThreadTimes[i] + "ms");
+            System.out.println(counts + " , fork / join process took " + forkedThreadTimes[i] + "ms");
         }
         
-        System.out.println("\nCSV Output:\n");
-        System.out.println("Single thread,Fork/Join");        
-        for (int i = 0; i < repeatCount; i++) {
-            System.out.println(singleThreadTimes[i] + "," + forkedThreadTimes[i]);
-        }
-        System.out.println();
+//        System.out.println("\nCSV Output:\n");
+//        System.out.println("Single thread,Fork/Join");        
+//        for (int i = 0; i < repeatCount; i++) {
+//            System.out.println(singleThreadTimes[i] + "," + forkedThreadTimes[i]);
+//        }
+//        System.out.println();
     }
 
 }

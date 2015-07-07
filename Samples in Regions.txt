@@ -93,3 +93,11 @@ Total number of samples: 57902
 Number of samples in region 1: 6
 Number of samples in region 2: 0
 Number of samples in region 3: 2
+
+1145 , single thread search took 1716836ms = 28.6 min
+1145 , fork / join search took 1830644ms = 30.5 min
+
+CSV Output:
+
+Single thread,Fork/Join
+1716836,1830644

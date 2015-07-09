@@ -1,6 +1,6 @@
 152
 Total number of samples: 62545
-Number of samples in region 1: 53
+Number of samples in region 1: 0
 Number of samples in region 2: 0
 Number of samples in region 3: 0
 
@@ -18,7 +18,7 @@ Number of samples in region 3: 0
 
 155
 Total number of samples: 63029
-Number of samples in region 1: 116
+Number of samples in region 1: 0
 Number of samples in region 2: 1
 Number of samples in region 3: 0
 
@@ -30,7 +30,7 @@ Number of samples in region 3: 0
 
 157
 Total number of samples: 57355
-Number of samples in region 1: 87
+Number of samples in region 1: 0
 Number of samples in region 2: 0
 Number of samples in region 3: 0
 
@@ -72,7 +72,7 @@ Number of samples in region 3: 0
 
 164
 Total number of samples: 63730
-Number of samples in region 1: 34
+Number of samples in region 1: 0
 Number of samples in region 2: 0
 Number of samples in region 3: 0
 
@@ -90,7 +90,7 @@ Number of samples in region 3: 0
 
 167
 Total number of samples: 57902
-Number of samples in region 1: 6
+Number of samples in region 1: 0
 Number of samples in region 2: 0
 Number of samples in region 3: 2
 

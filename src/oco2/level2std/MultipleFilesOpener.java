@@ -30,7 +30,7 @@ public class MultipleFilesOpener {
 		long total_records = 0;
 		
 		long region_1_counter = 0;
-		Region region1 = new Region((float)71.4, (float)69.0, (float)152.0, (float)162.0);
+		Region region1 = new Region((float)71.4, (float)69.0, (float)-152.0, (float)-162.0);
 //		float reg_1_lat_top = (float) 71.4;
 //		float reg_1_lat_bottom = (float) 69.0;
 //		float reg_1_long_left = (float) 152.0;

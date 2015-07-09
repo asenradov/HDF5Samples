@@ -1,6 +1,12 @@
 package oco2.level2std;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -11,9 +17,9 @@ import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.h5.H5File;
 
-public class SamplesInRegionCounter {
-	
-    Long occurrencesCount(Document document, Region region) {
+public class SamplesInRegionToFile {
+
+    List<GeoPoint> occurrencesToList(Document document, Region region) {
         
     	String DATASETNAME_LAT = "RetrievalGeometry/retrieval_latitude";
     	String DATASETNAME_LONG = "RetrievalGeometry/retrieval_longitude";
@@ -28,8 +34,8 @@ public class SamplesInRegionCounter {
 		long[] latitude_dims = { 1 };
 		long[] longitude_dims = { 1 };
 		float[] latitude_data;
-		float[] longitude_data;   	
-    	long count = 0;
+		float[] longitude_data;
+    	List<GeoPoint> listOfPoints = new ArrayList<>();
     	
     	try {
 
@@ -72,7 +78,7 @@ public class SamplesInRegionCounter {
     		for (int i = 0; i < latitude_data.length; i++) {
 
     			if (region.inRegion(latitude_data[i], longitude_data[i])) {				
-    				count++;
+    				listOfPoints.add(new GeoPoint(latitude_data[i],longitude_data[i]));
     			}
     		}
 
@@ -95,22 +101,22 @@ public class SamplesInRegionCounter {
     			e.printStackTrace();
     	}
 		
-        return count;
+        return listOfPoints;
     }
     
-    Long countOccurrencesOnSingleThread(Folder folder, Region region) {
-        long count = 0;
-        for (Folder subFolder : folder.getSubFolders()) {
-            count = count + countOccurrencesOnSingleThread(subFolder, region);
-        }
-        for (Document document : folder.getDocuments()) {
-            count = count + occurrencesCount(document, region);
-        }
-        return count;
-    }
+//    Long countOccurrencesOnSingleThread(Folder folder, Region region) {
+//        long count = 0;
+//        for (Folder subFolder : folder.getSubFolders()) {
+//            count = count + countOccurrencesOnSingleThread(subFolder, region);
+//        }
+//        for (Document document : folder.getDocuments()) {
+//            count = count + occurrencesCount(document, region);
+//        }
+//        return count;
+//    }
     
     @SuppressWarnings("serial")
-	class DocumentSearchTask extends RecursiveTask<Long> {
+	class DocumentSearchTask extends RecursiveTask<List<GeoPoint>> {
         private final Document document;
         private final Region region;
         
@@ -121,13 +127,13 @@ public class SamplesInRegionCounter {
         }
         
         @Override
-        protected Long compute() {
-            return occurrencesCount(document, region);
+        protected List<GeoPoint> compute() {
+            return occurrencesToList(document, region);
         }
     }
     
     @SuppressWarnings("serial")
-	class FolderSearchTask extends RecursiveTask<Long> {
+	class FolderSearchTask extends RecursiveTask<List<GeoPoint>> {
         private final Folder folder;
         private final Region region;
         
@@ -138,9 +144,9 @@ public class SamplesInRegionCounter {
         }
         
         @Override
-        protected Long compute() {
-            long count = 0L;
-            List<RecursiveTask<Long>> forks = new LinkedList<>();
+        protected List<GeoPoint> compute() {
+        	List<GeoPoint> listOfPoints = new ArrayList<>();
+            List<RecursiveTask<List<GeoPoint>>> forks = new LinkedList<>();
             for (Folder subFolder : folder.getSubFolders()) {
                 FolderSearchTask task = new FolderSearchTask(subFolder, region);
                 forks.add(task);
@@ -151,34 +157,36 @@ public class SamplesInRegionCounter {
                 forks.add(task);
                 task.fork();
             }
-            for (RecursiveTask<Long> task : forks) {
-                count = count + task.join();
+            for (RecursiveTask<List<GeoPoint>> task : forks) {
+            	listOfPoints.addAll(task.join());
             }
-            return count;
+            return listOfPoints;
         }
     }
             
     private final ForkJoinPool forkJoinPool = new ForkJoinPool();
 
-    Long countOccurrencesInParallel(Folder folder, Region region) {
+    List<GeoPoint> countOccurrencesInParallel(Folder folder, Region region) {
     	return forkJoinPool.invoke(new FolderSearchTask(folder, region));
     }
     
     public static void main(String[] args) throws Exception {
-    	SamplesInRegionCounter samplesInRegionCounter = new SamplesInRegionCounter();
+    	
+    	SamplesInRegionToFile samplesInRegionToFile = new SamplesInRegionToFile();
         Folder folder = Folder.fromDirectory(new File(args[0]));
         
-        final int repeatCount = Integer.decode(args[1]);
-        long counts;
+//        final int repeatCount = Integer.decode(args[1]);
+        List<GeoPoint> listOfPoints = new ArrayList<>();
         long startTime;
         long stopTime;
-        
+        long totalTime;
+               
         Region region1 = new Region((float)71.4, (float)69.0, (float)-152.0, (float)-162.0);
         Region region2 = new Region((float)-1.6, (float)-3.6, (float)-61.5, (float)-59.0);
         Region region3 = new Region((float)36.5, (float)34.5, (float)-99.5, (float)-96.5);
         
-        long[] singleThreadTimes = new long[repeatCount];
-        long[] forkedThreadTimes = new long[repeatCount];
+//        long[] singleThreadTimes = new long[repeatCount];
+//        long[] forkedThreadTimes = new long[repeatCount];
         
 //        for (int i = 0; i < repeatCount; i++) {
 //            startTime = System.currentTimeMillis();
@@ -188,12 +196,26 @@ public class SamplesInRegionCounter {
 //            System.out.println(counts + " , single thread search took " + singleThreadTimes[i] + "ms");
 //        }
         
-        for (int i = 0; i < repeatCount; i++) {
-            startTime = System.currentTimeMillis();
-            counts = samplesInRegionCounter.countOccurrencesInParallel(folder, region3);
-            stopTime = System.currentTimeMillis();
-            forkedThreadTimes[i] = (stopTime - startTime);
-            System.out.println(counts + " , fork / join process took " + forkedThreadTimes[i] + "ms");
+//        for (int i = 0; i < repeatCount; i++) {
+//            startTime = System.currentTimeMillis();
+//            listOfPoints = samplesInRegionToFile.countOccurrencesInParallel(folder, region1);
+//            stopTime = System.currentTimeMillis();
+//            forkedThreadTimes[i] = (stopTime - startTime);
+//            System.out.println("Fork / join process took " + forkedThreadTimes[i] + "ms");
+//        }
+        
+        startTime = System.currentTimeMillis();
+        listOfPoints = samplesInRegionToFile.countOccurrencesInParallel(folder, region3);
+        stopTime = System.currentTimeMillis();
+        totalTime = (stopTime - startTime);
+        System.out.println("Fork / join process took " + totalTime + "ms");
+        
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("OutputPoints1.txt")))) {            
+            for (GeoPoint aPoint: listOfPoints) {
+            	writer.write(aPoint.getLatitude() + "," + aPoint.getLongitude() + "\n");
+            }
+        } catch (IOException ex) {
+        	ex.printStackTrace();
         }
         
 //        System.out.println("\nCSV Output:\n");
@@ -203,5 +225,6 @@ public class SamplesInRegionCounter {
 //        }
 //        System.out.println();
     }
-
+	
+	
 }

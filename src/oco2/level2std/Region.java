@@ -34,9 +34,19 @@ public class Region {
 	public boolean inRegion(float latitude, float longitude) {
 		
 		if (latitude <= this.lat_top && latitude >= this.lat_bottom &&
-				longitude <= this.long_right && longitude >= this.getLong_left()) 
+				longitude <= this.long_right && longitude >= this.long_left) 
 			return true;
 		else
 			return false;		
+	}
+	
+	public GeoPoint regionCenter() {
+		float latitude = 0f;
+		float longitude = 0f;
+		
+		latitude = (this.lat_top + this.lat_bottom)/2;
+		longitude = (this.long_right + this.long_left)/2;
+		
+		return new GeoPoint(latitude,longitude);
 	}
 }

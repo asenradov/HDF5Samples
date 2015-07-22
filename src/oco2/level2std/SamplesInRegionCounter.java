@@ -17,18 +17,24 @@ public class SamplesInRegionCounter {
         
     	String DATASETNAME_LAT = "RetrievalGeometry/retrieval_latitude";
     	String DATASETNAME_LONG = "RetrievalGeometry/retrieval_longitude";
+    	String DATASETNAME_XCO2 = "RetrievalResults/xco2";
     	
 		H5File file = null;
 		Dataset latitude = null;
 		Dataset longitude = null;
+		Dataset xco2 = null;
 		int latitude_dataspace_id = -1;
 		int longitude_dataspace_id = -1;
+		int xco2_dataspace_id = -1;
 		int latitude_dataset_id = -1;
 		int longitude_dataset_id = -1;
+		int xco2_dataset_id = -1;
 		long[] latitude_dims = { 1 };
 		long[] longitude_dims = { 1 };
+		long[] xco2_dims = { 1 };
 		float[] latitude_data;
-		float[] longitude_data;   	
+		float[] longitude_data;
+		float[] xco2_data;
     	long count = 0;
     	
     	try {
@@ -44,6 +50,10 @@ public class SamplesInRegionCounter {
     		// Open longitude dataset.
     		longitude = (Dataset) file.get(DATASETNAME_LONG);
     		longitude_dataset_id = longitude.open();
+    		
+    		// Open xco2 dataset.
+    		xco2 = (Dataset) file.get(DATASETNAME_XCO2);
+    		xco2_dataset_id = xco2.open();
 
     		// Get latitude dataspace and allocate memory for the read buffer.
     		if (latitude_dataset_id >= 0)
@@ -56,10 +66,17 @@ public class SamplesInRegionCounter {
     			longitude_dataspace_id = H5.H5Dget_space(longitude_dataset_id);
     		if (longitude_dataset_id >= 0)
     			H5.H5Sget_simple_extent_dims(longitude_dataspace_id, longitude_dims, null);
+    		
+    		// Get xco2 dataspace and allocate memory for the read buffer.
+    		if (xco2_dataset_id >= 0)
+    			xco2_dataspace_id = H5.H5Dget_space(xco2_dataset_id);
+    		if (xco2_dataset_id >= 0)
+    			H5.H5Sget_simple_extent_dims(xco2_dataspace_id, xco2_dims, null);
 
     		// Allocate array of pointers to rows.
     		latitude_data = new float[(int) latitude_dims[0]];
     		longitude_data = new float[(int) longitude_dims[0]];
+    		xco2_data = new float[(int) xco2_dims[0]];
 
     		// Read the data using the default properties.
     		latitude.init();
@@ -67,6 +84,9 @@ public class SamplesInRegionCounter {
 
     		longitude.init();
     		longitude_data = (float[]) longitude.getData();
+    		
+    		xco2.init();
+    		xco2_data = (float[]) xco2.getData();
 
     		// Process data
     		for (int i = 0; i < latitude_data.length; i++) {
@@ -87,6 +107,12 @@ public class SamplesInRegionCounter {
     			longitude.close(longitude_dataset_id);
     		if (longitude_dataspace_id >= 0)
     			H5.H5Sclose(longitude_dataspace_id);
+    		
+    		// End access to the xco2 dataset and release resources used by it.
+    		if (xco2_dataset_id >= 0)
+    			xco2.close(xco2_dataset_id);
+    		if (xco2_dataspace_id >= 0)
+    			H5.H5Sclose(xco2_dataspace_id);
 
     		// Close the file.
     		file.close();
@@ -168,17 +194,21 @@ public class SamplesInRegionCounter {
     	SamplesInRegionCounter samplesInRegionCounter = new SamplesInRegionCounter();
         Folder folder = Folder.fromDirectory(new File(args[0]));
         
-        final int repeatCount = Integer.decode(args[1]);
-        long counts;
-        long startTime;
-        long stopTime;
+//        final int repeatCount = Integer.decode(args[1]);     
+//        long startTime;
+//        long stopTime;
         
-        Region region1 = new Region((float)71.4, (float)69.0, (float)-152.0, (float)-162.0);
-        Region region2 = new Region((float)-1.6, (float)-3.6, (float)-61.5, (float)-59.0);
-        Region region3 = new Region((float)36.5, (float)34.5, (float)-99.5, (float)-96.5);
+        long count1;
+        long count2;
+        long count3;
         
-        long[] singleThreadTimes = new long[repeatCount];
-        long[] forkedThreadTimes = new long[repeatCount];
+        Region region1 = new Region(71.4f, 69.0f, -162.0f, -152.0f);
+        Region region2 = new Region(-1.6f, -3.6f, -61.5f, -59.0f);
+        Region region3 = new Region(36.5f, 34.5f, -99.5f, -96.5f);
+        Region region4 = new Region(90.0f, -90.0f, -180.0f, 180.0f);
+        
+//        long[] singleThreadTimes = new long[repeatCount];
+//        long[] forkedThreadTimes = new long[repeatCount];
         
 //        for (int i = 0; i < repeatCount; i++) {
 //            startTime = System.currentTimeMillis();
@@ -188,14 +218,22 @@ public class SamplesInRegionCounter {
 //            System.out.println(counts + " , single thread search took " + singleThreadTimes[i] + "ms");
 //        }
         
-        for (int i = 0; i < repeatCount; i++) {
-            startTime = System.currentTimeMillis();
-            counts = samplesInRegionCounter.countOccurrencesInParallel(folder, region3);
-            stopTime = System.currentTimeMillis();
-            forkedThreadTimes[i] = (stopTime - startTime);
-            System.out.println(counts + " , fork / join process took " + forkedThreadTimes[i] + "ms");
-        }
+//        for (int i = 0; i < repeatCount; i++) {
+//            startTime = System.currentTimeMillis();
+//            counts = samplesInRegionCounter.countOccurrencesInParallel(folder, region4);
+//            stopTime = System.currentTimeMillis();
+//            forkedThreadTimes[i] = (stopTime - startTime);
+//            System.out.println(counts + " , fork / join process took " + forkedThreadTimes[i] + "ms");
+//        }
         
+        count1 = samplesInRegionCounter.countOccurrencesInParallel(folder, region1);
+        System.out.println("Number of samples in region 1: " + count1);
+        count2 = samplesInRegionCounter.countOccurrencesInParallel(folder, region2);
+        System.out.println("Number of samples in region 2: " + count2);
+        count3 = samplesInRegionCounter.countOccurrencesInParallel(folder, region3);
+        System.out.println("Number of samples in region 3: " + count3);
+        
+                
 //        System.out.println("\nCSV Output:\n");
 //        System.out.println("Single thread,Fork/Join");        
 //        for (int i = 0; i < repeatCount; i++) {

@@ -27,30 +27,16 @@ public class MultipleFilesOpener {
 		float[] latitude_data;
 		float[] longitude_data;
 		
-		long total_records = 0;
-		
-		long region_1_counter = 0;
-		Region region1 = new Region((float)71.4, (float)69.0, (float)-152.0, (float)-162.0);
-//		float reg_1_lat_top = (float) 71.4;
-//		float reg_1_lat_bottom = (float) 69.0;
-//		float reg_1_long_left = (float) 152.0;
-//		float reg_1_long_right = (float) 162.0;
-		
-		long region_2_counter = 0;
-		Region region2 = new Region((float)-1.6, (float)-3.6, (float)-61.5, (float)-59.0);
-//		float reg_2_lat_top = (float) -1.6;
-//		float reg_2_lat_bottom = (float) -3.6;
-//		float reg_2_long_left = (float) -61.5;
-//		float reg_2_long_right = (float) -59.0;
-		
+		long total_records = 0;		
+		long region_1_counter = 0;		
+		long region_2_counter = 0;		
 		long region_3_counter = 0;
-		Region region3 = new Region((float)36.5, (float)34.5, (float)-99.5, (float)-96.5);
-//		float reg_3_lat_top = (float) 36.5;
-//		float reg_3_lat_bottom = (float) 34.5;
-//		float reg_3_long_left = (float) -99.5;
-//		float reg_3_long_right = (float) -96.5;
-		
-		
+	
+        Region region1 = new Region(71.4f, 69.0f, -162.0f, -152.0f);
+        Region region2 = new Region(-1.6f, -3.6f, -61.5f, -59.0f);
+        Region region3 = new Region(36.5f, 34.5f, -99.5f, -96.5f);
+        Region region4 = new Region(90.0f, -90.0f, -180.0f, 180.0f);
+	
 		try {			
 			for (File localFile : listOfFiles) {
 			    if (localFile.isFile() && localFile.getName().endsWith(".h5")) {

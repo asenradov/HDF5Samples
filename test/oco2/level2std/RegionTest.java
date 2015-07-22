@@ -18,22 +18,22 @@ public class RegionTest {
 	
 	@Test
 	public void testOutsideReg1Lat1() {
-		assertFalse(testRegion1.inRegion((float)49.9, 30));		
+		assertFalse(testRegion1.inRegion(49.9f, 30));		
 	}
 	
 	@Test
 	public void testOutsideReg1Lat2() {
-		assertFalse(testRegion1.inRegion((float)70.1, 30));		
+		assertFalse(testRegion1.inRegion(70.1f, 30));		
 	}
 	
 	@Test
 	public void testOutsideReg1Long1() {
-		assertFalse(testRegion1.inRegion(60, (float)19.9));		
+		assertFalse(testRegion1.inRegion(60, 19.9f));		
 	}
 	
 	@Test
 	public void testOutsideReg1Long2() {
-		assertFalse(testRegion1.inRegion(60, (float)40.1));		
+		assertFalse(testRegion1.inRegion(60, 40.1f));		
 	}
 	
 	@Test
@@ -43,22 +43,22 @@ public class RegionTest {
 	
 	@Test
 	public void testOutsideReg2Lat1() {
-		assertFalse(testRegion2.inRegion((float)-9.9, -30));		
+		assertFalse(testRegion2.inRegion(-9.9f, -30));		
 	}
 	
 	@Test
 	public void testOutsideReg2Lat2() {
-		assertFalse(testRegion2.inRegion((float)-20.1, -30));		
+		assertFalse(testRegion2.inRegion(-20.1f, -30));		
 	}
 	
 	@Test
 	public void testOutsideReg2Long1() {
-		assertFalse(testRegion2.inRegion(-15, (float)-40.1));		
+		assertFalse(testRegion2.inRegion(-15, -40.1f));		
 	}
 	
 	@Test
 	public void testOutsideReg2Long2() {
-		assertFalse(testRegion2.inRegion(-15, (float)-19.9));		
+		assertFalse(testRegion2.inRegion(-15, -19.9f));		
 	}
 	
 	@Test
@@ -68,22 +68,37 @@ public class RegionTest {
 	
 	@Test
 	public void testOutsideReg3Lat1() {
-		assertFalse(testRegion3.inRegion((float)10.1, 10));		
+		assertFalse(testRegion3.inRegion(10.1f, 10));		
 	}
 	
 	@Test
 	public void testOutsideReg3Lat2() {
-		assertFalse(testRegion3.inRegion((float)-5.1, -10));		
+		assertFalse(testRegion3.inRegion(-5.1f, -10));		
 	}
 	
 	@Test
 	public void testOutsideReg3Long1() {
-		assertFalse(testRegion3.inRegion(-4, (float)-20.1));		
+		assertFalse(testRegion3.inRegion(-4, -20.1f));		
 	}
 	
 	@Test
 	public void testOutsideReg3Long2() {
-		assertFalse(testRegion3.inRegion(9, (float)20.1));		
+		assertFalse(testRegion3.inRegion(9, 20.1f));		
+	}
+	
+	@Test
+	public void testRegionCenter1() {
+		assertTrue(testRegion1.regionCenter().getLatitude() == 60 && testRegion1.regionCenter().getLongitude() == 30);
+	}
+	
+	@Test
+	public void testRegionCenter2() {
+		assertTrue(testRegion2.regionCenter().getLatitude() == -15 && testRegion2.regionCenter().getLongitude() == -30);
+	}
+	
+	@Test
+	public void testRegionCenter3() {
+		assertTrue(testRegion3.regionCenter().getLatitude() == 2.5 && testRegion3.regionCenter().getLongitude() == 0);
 	}
 
 }

@@ -4,6 +4,7 @@ import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.h5.H5File;
+import ncsa.hdf.object.h5.H5ScalarDS;
 
 public class MyTest {
 
@@ -12,20 +13,22 @@ public class MyTest {
 	
 	private static String DATASETNAME_LAT = "RetrievalGeometry/retrieval_latitude";
 	private static String DATASETNAME_LONG = "RetrievalGeometry/retrieval_longitude";
-	private static final int DIM_X = 1;
-
+	private static String DATASETNAME_DATE = "Metadata/OrbitStartDate";
+	
 	private static void readUnlimited() {
 		H5File file = null;
 		Dataset latitude = null;
 		Dataset longitude = null;
+		H5ScalarDS orbitStartDate = null;
 		int latitude_dataspace_id = -1;
 		int longitude_dataspace_id = -1;
 		int latitude_dataset_id = -1;
 		int longitude_dataset_id = -1;
-		long[] latitude_dims = { DIM_X };
-		long[] longitude_dims = { DIM_X };
+		long[] latitude_dims = { 1 };
+		long[] longitude_dims = { 1 };
 		float[] latitude_data;
 		float[] longitude_data;
+		String[] date_data = {""};
 
 		// Open an existing file.
 		try {
@@ -48,6 +51,14 @@ public class MyTest {
 			longitude = (Dataset) file.get(DATASETNAME_LONG);
 			longitude_dataset_id = longitude.open();
 		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// Get orbitStartDate dataset.
+		try {
+			orbitStartDate = (H5ScalarDS) file.get(DATASETNAME_DATE);
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -80,12 +91,11 @@ public class MyTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		
+						
 		// Allocate array of pointers to rows.
 		latitude_data = new float[(int) latitude_dims[0]];
 		longitude_data = new float[(int) longitude_dims[0]];
-
+		
 		// Read the data using the default properties.
 		try {
 			latitude.init();
@@ -101,6 +111,13 @@ public class MyTest {
 			e.printStackTrace();
 		}
 
+		// Read String date
+		try {
+			date_data = (String[]) orbitStartDate.read();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		// Output the data to the screen.
 		System.out.println("Latitude Dataset contains:");
 		for (int indx = 0; indx < latitude_dims[0]; indx++) {
@@ -117,6 +134,10 @@ public class MyTest {
 			System.out.print(longitude_data[indx] + " ");
 			System.out.println("]");
 		}
+		System.out.println();
+		
+		// Output the data to the screen.
+		System.out.println("Orbit Start Date is: " + date_data[0]);
 		System.out.println();
 
 		// End access to the latitude dataset and release resources used by it.

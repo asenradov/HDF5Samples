@@ -181,9 +181,10 @@ public class SamplesInRegionToFile {
         long stopTime;
         long totalTime;
                
-        Region region1 = new Region((float)71.4, (float)69.0, (float)-152.0, (float)-162.0);
-        Region region2 = new Region((float)-1.6, (float)-3.6, (float)-61.5, (float)-59.0);
-        Region region3 = new Region((float)36.5, (float)34.5, (float)-99.5, (float)-96.5);
+        Region region1 = new Region(71.4f, 69.0f, -162.0f, -152.0f);
+        Region region2 = new Region(-1.6f, -3.6f, -61.5f, -59.0f);
+        Region region3 = new Region(36.5f, 34.5f, -99.5f, -96.5f);
+        Region region4 = new Region(90.0f, -90.0f, -180.0f, 180.0f);
         
 //        long[] singleThreadTimes = new long[repeatCount];
 //        long[] forkedThreadTimes = new long[repeatCount];
@@ -205,14 +206,14 @@ public class SamplesInRegionToFile {
 //        }
         
         startTime = System.currentTimeMillis();
-        listOfPoints = samplesInRegionToFile.countOccurrencesInParallel(folder, region3);
+        listOfPoints = samplesInRegionToFile.countOccurrencesInParallel(folder, region1);
         stopTime = System.currentTimeMillis();
         totalTime = (stopTime - startTime);
         System.out.println("Fork / join process took " + totalTime + "ms");
         
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("OutputPoints1.txt")))) {            
             for (GeoPoint aPoint: listOfPoints) {
-            	writer.write(aPoint.getLatitude() + "," + aPoint.getLongitude() + "\n");
+            	writer.write(aPoint.getLatitude() + "\t" + aPoint.getLongitude() + "\n");
             }
         } catch (IOException ex) {
         	ex.printStackTrace();

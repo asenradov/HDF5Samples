@@ -6,9 +6,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
@@ -18,45 +22,45 @@ import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.h5.H5File;
 import ncsa.hdf.object.h5.H5ScalarDS;
 
-public class SamplesInRegionAverage {
+public class SamplesInRegionAverageLite {
 
 	List<GeoPointCarbon> occurrencesToList(Document document, Region region) {
 
-    	String DATASETNAME_LAT = "RetrievalGeometry/retrieval_latitude";
-    	String DATASETNAME_LONG = "RetrievalGeometry/retrieval_longitude";
-    	String DATASETNAME_XCO2 = "RetrievalResults/xco2";
-    	String DATASETNAME_XCO2_INTERF = "RetrievalResults/xco2_uncert_interf";
-    	String DATASETNAME_XCO2_NOISE = "RetrievalResults/xco2_uncert_noise";
-    	String DATASETNAME_DATE = "Metadata/OrbitStartDate";
+    	String DATASETNAME_LAT = "latitude";
+    	String DATASETNAME_LONG = "longitude";
+    	String DATASETNAME_XCO2 = "xco2";
+    	String DATASETNAME_TIME = "time";
+    	String DATASETNAME_WARN_LEVEL = "warn_level";
+//    	String DATASETNAME_DATE = "Metadata/OrbitStartDate";
     	
 		H5File file = null;
 		Dataset latitude = null;
 		Dataset longitude = null;
 		Dataset xco2 = null;
-		Dataset xco2_interf = null;
-		Dataset xco2_noise = null;
-		H5ScalarDS orbitStartDate = null;
+		Dataset time = null;
+		Dataset warn_level = null;
+//		H5ScalarDS orbitStartDate = null;
 		int latitude_dataspace_id = -1;
 		int longitude_dataspace_id = -1;
 		int xco2_dataspace_id = -1;
-		int xco2_interf_dataspace_id = -1;
-		int xco2_noise_dataspace_id = -1;
+		int time_dataspace_id = -1;
+		int warn_level_dataspace_id = -1;
 		int latitude_dataset_id = -1;
 		int longitude_dataset_id = -1;
 		int xco2_dataset_id = -1;
-		int xco2_interf_dataset_id = -1;
-		int xco2_noise_dataset_id = -1;
+		int time_dataset_id = -1;
+		int warn_level_dataset_id = -1;
 		long[] latitude_dims = { 1 };
 		long[] longitude_dims = { 1 };
 		long[] xco2_dims = { 1 };
-		long[] xco2_interf_dims = { 1 };
-		long[] xco2_noise_dims = { 1 };
+		long[] time_dims = { 1 };
+		long[] warn_level_dims = { 1 };
 		float[] latitude_data;
 		float[] longitude_data;
 		float[] xco2_data;
-		float[] xco2_interf_data;
-		float[] xco2_noise_data;
-		String[] date_data = {""};
+		double[] time_data;
+		byte[] warn_level_data;
+		//String[] date_data = {""};
     	List<GeoPointCarbon> listOfPoints = new ArrayList<>();
 
 		try {
@@ -77,8 +81,16 @@ public class SamplesInRegionAverage {
 			xco2 = (Dataset) file.get(DATASETNAME_XCO2);
 			xco2_dataset_id = xco2.open();
 			
+			// Open time dataset.
+			time = (Dataset) file.get(DATASETNAME_TIME);
+			time_dataset_id = time.open();
+			
+			// Open warn_level dataset.
+			warn_level = (Dataset) file.get(DATASETNAME_WARN_LEVEL);
+			warn_level_dataset_id = warn_level.open();
+			
 			// Get orbitStartDate dataset.
-			orbitStartDate = (H5ScalarDS) file.get(DATASETNAME_DATE);
+//			orbitStartDate = (H5ScalarDS) file.get(DATASETNAME_DATE);
 			
 			// Get latitude dataspace and allocate memory for the read buffer.
 			if (latitude_dataset_id >= 0)
@@ -97,11 +109,25 @@ public class SamplesInRegionAverage {
 				xco2_dataspace_id = H5.H5Dget_space(xco2_dataset_id);
 			if (xco2_dataset_id >= 0)
 				H5.H5Sget_simple_extent_dims(xco2_dataspace_id, xco2_dims, null);
+			
+			// Get time dataspace and allocate memory for the read buffer.
+			if (time_dataset_id >= 0)
+				time_dataspace_id = H5.H5Dget_space(time_dataset_id);
+			if (time_dataset_id >= 0)
+				H5.H5Sget_simple_extent_dims(time_dataspace_id, time_dims, null);
+			
+			// Get warn_level dataspace and allocate memory for the read buffer.
+			if (warn_level_dataset_id >= 0)
+				warn_level_dataspace_id = H5.H5Dget_space(warn_level_dataset_id);
+			if (warn_level_dataset_id >= 0)
+				H5.H5Sget_simple_extent_dims(warn_level_dataspace_id, warn_level_dims, null);
 
 			// Allocate array of pointers to rows.
 			latitude_data = new float[(int) latitude_dims[0]];
 			longitude_data = new float[(int) longitude_dims[0]];
 			xco2_data = new float[(int) xco2_dims[0]];
+			time_data = new double[(int) time_dims[0]];
+			warn_level_data = new byte[(int) warn_level_dims[0]];
 
 			// Read the data using the default properties.
 			latitude.init();
@@ -113,13 +139,19 @@ public class SamplesInRegionAverage {
 			xco2.init();
 			xco2_data = (float[]) xco2.getData();
 			
-			date_data = (String[]) orbitStartDate.read();
+			time.init();
+			time_data = (double[]) time.getData();
+			
+			warn_level.init();
+			warn_level_data = (byte[]) warn_level.getData();
+			
+//			date_data = (String[]) orbitStartDate.read();
 
 			// Process data
 			for (int i = 0; i < latitude_data.length; i++) {
 
-				if (region.inRegion(latitude_data[i], longitude_data[i])) {				
-					listOfPoints.add(new GeoPointCarbon(latitude_data[i],longitude_data[i],date_data[0], (float) (xco2_data[i]*Math.pow(10, 6))));
+				if (region.inRegion(latitude_data[i], longitude_data[i]) && warn_level_data[i] <= 15) {				
+					listOfPoints.add(new GeoPointCarbon(latitude_data[i],longitude_data[i],get_date(time_data[i]), xco2_data[i]));
 				}
 			}
 
@@ -140,6 +172,18 @@ public class SamplesInRegionAverage {
 				xco2.close(xco2_dataset_id);
 			if (xco2_dataspace_id >= 0)
 				H5.H5Sclose(xco2_dataspace_id);
+			
+			// End access to the time dataset and release resources used by it.
+			if (time_dataset_id >= 0)
+				time.close(time_dataset_id);
+			if (time_dataspace_id >= 0)
+				H5.H5Sclose(time_dataspace_id);
+			
+			// End access to the warn_level dataset and release resources used by it.
+			if (warn_level_dataset_id >= 0)
+				warn_level.close(warn_level_dataset_id);
+			if (warn_level_dataspace_id >= 0)
+				H5.H5Sclose(warn_level_dataspace_id);
 
 			// Close the file.
 			file.close();
@@ -149,6 +193,16 @@ public class SamplesInRegionAverage {
 		}
 
 		return listOfPoints;
+	}
+
+	// get formatted date from time in seconds since 1/1/1970
+	private String get_date(double f) {
+		
+		long seconds = (long)f;
+		Date date = new Date(seconds * 1000);
+		SimpleDateFormat sdf = new SimpleDateFormat("M/d/YYYY h:mm,a", Locale.US);
+		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+		return sdf.format(date);
 	}
 
 	//	    Long countOccurrencesOnSingleThread(Folder folder, Region region) {
@@ -219,7 +273,7 @@ public class SamplesInRegionAverage {
 
 	public static void main(String[] args) throws Exception {
 
-		SamplesInRegionAverage samplesInRegionAverage = new SamplesInRegionAverage();
+		SamplesInRegionAverageLite samplesInRegionAverageLite = new SamplesInRegionAverageLite();
 		Folder folder = Folder.fromDirectory(new File(args[0]));
 
 		List<GeoPointCarbon> listOfPoints = new ArrayList<>();
@@ -237,14 +291,14 @@ public class SamplesInRegionAverage {
         Region region3 = new Region(37.6f, 35.6f, -99.0f, -96.0f);
 
 		startTime = System.currentTimeMillis();
-		listOfPoints = samplesInRegionAverage.countOccurrencesInParallel(folder, region1);
+		listOfPoints = samplesInRegionAverageLite.countOccurrencesInParallel(folder, region3);
 		stopTime = System.currentTimeMillis();
 		totalTime = (stopTime - startTime);
 		System.out.println("Fork / join process took " + totalTime + "ms");
 
-		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("Sep2014July2015Region1.txt")))) {            
+		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("Sep2014Sep2015Region3Lite.txt")))) {            
 			for (GeoPointCarbon aPoint: listOfPoints) {
-				writer.write(aPoint.getLatitude() + "\t" + aPoint.getLongitude() + "\t" + aPoint.getXco2() + "\t" + aPoint.getDate() +"\n");
+				writer.write(aPoint.getLatitude() + "\t" + aPoint.getLongitude() + "\t" + "dot1" + "\t" + "red" + "\t" + aPoint.getXco2()  + "\t"+ aPoint.getDate() +"\n");
 				//average += aPoint.getXco2();
 			}
 			//writer.write(region1.regionCenter().getLatitude() + "\t" + region1.regionCenter().getLongitude() + "\t" + average/listOfPoints.size() +"\n");

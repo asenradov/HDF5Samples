@@ -1,6 +1,6 @@
 package oco2.level2std;
 
-class Document {
+public class Document {
     
 	String fileName;
 		

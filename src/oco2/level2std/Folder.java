@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
-class Folder {
+public class Folder {
     private final List<Folder> subFolders;
     private final List<Document> documents;
     
@@ -13,21 +13,21 @@ class Folder {
         this.documents = documents;
     }
     
-    List<Folder> getSubFolders() {
+    public List<Folder> getSubFolders() {
         return this.subFolders;
     }
     
-    List<Document> getDocuments() {
+    public List<Document> getDocuments() {
         return this.documents;
     }
     
-    static Folder fromDirectory(File dir) throws Exception {
+    public static Folder fromDirectory(File dir) throws Exception {
         List<Document> documents = new LinkedList<>();
         List<Folder> subFolders = new LinkedList<>();
         for (File entry : dir.listFiles()) {
             if (entry.isDirectory()) {
-                subFolders.add(Folder.fromDirectory(entry));
-            } else if (entry.isFile() && entry.getName().endsWith(".nc4")){
+                subFolders.add(Folder.fromDirectory(entry));    
+            } else if (entry.isFile() && (entry.getName().endsWith(".nc4") || entry.getName().endsWith(".cdf"))){
                 documents.add(new Document(entry.getPath()));
             }
         }

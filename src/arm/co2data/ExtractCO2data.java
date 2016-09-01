@@ -11,13 +11,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
-import arm.co2data.TransformCO2toPPM.DocumentSearchTask;
-import arm.co2data.TransformCO2toPPM.FolderSearchTask;
 import oco2.level2std.Document;
 import oco2.level2std.Folder;
 import ucar.ma2.Array;
@@ -144,6 +141,15 @@ public class ExtractCO2data {
 			while (co2flux_ii.hasNext()) {	
 				
 				long date = (long)base_time + (long)time_ii.getDoubleNext();
+				
+//				listOfPoints.add(new CO2data(date,co2flux_ii.getFloatNext(),co2_ii.getFloatNext(),
+//						largeCO2Variance(co2_ii.getFloatCurrent(),var_co2_ii.getFloatNext()),h2o_ii.getFloatNext(),
+//						largeH2OVariance(h2o_ii.getFloatCurrent(),var_h2o_ii.getFloatNext()),temperature_ii.getFloatNext(),
+//						largeTemperatureVariance(temperature_ii.getFloatCurrent(),var_temperature_ii.getFloatNext()),
+//						presure_ii.getFloatNext(),new WindArm(wind_speed_ii.getFloatNext(),
+//								largeWindVariance(wind_speed_ii.getFloatCurrent(),var_wind_speed_ii.getFloatNext()),
+//								wind_dir_horiz_ii.getFloatNext(),wind_dir_theta_ii.getFloatNext(),wind_dir_phi_ii.getFloatNext())));
+				
 								
 				listOfPoints.add(new CO2data(get_date(date),co2flux_ii.getFloatNext(),co2_ii.getFloatNext(),
 						largeCO2Variance(co2_ii.getFloatCurrent(),var_co2_ii.getFloatNext()),h2o_ii.getFloatNext(),
@@ -171,11 +177,11 @@ public class ExtractCO2data {
 	}
 
 	// get formatted date from time in seconds since 1/1/1970
-	private String get_date(long f) {
+	public static String get_date(long f) {
 
 		long seconds = (long)f;
 		Date date = new Date(seconds * 1000);
-		SimpleDateFormat sdf = new SimpleDateFormat("M/d/YYYY H:mm");
+		SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy H:mm");
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 		return sdf.format(date);
 	}
@@ -325,7 +331,7 @@ public class ExtractCO2data {
 	}
 
 	public static void main(String[] args) throws Exception {
-
+		
 		ExtractCO2data extractCO2data = new ExtractCO2data();
 		Folder folder = Folder.fromDirectory(new File(args[0]));
 
@@ -341,8 +347,8 @@ public class ExtractCO2data {
 		totalTime = (stopTime - startTime);
 		System.out.println("Fork / join process took " + totalTime + "ms");
 
-		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("ARM60mJan2001Apr2015Oklahoma.csv")))) {            
-			writer.write("Date (M/d/YYYY H:mm),CO2 Flux(umol m-2 s-1),CO2(mmol m-3),CO2 Variance,H2O(mmol m-3),H2O Variance,Temperature(degree C),"
+		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("ARM60mJan2001Jul2015Oklahoma.csv")))) {            
+			writer.write("Date (M/d/yyyy H:mm),CO2 Flux(umol m-2 s-1),CO2(mmol m-3),CO2 Variance,H2O(mmol m-3),H2O Variance,Temperature(degree C),"
 					+ "Temperature Variance,Pressure(kPa),Wind Speed(m s-1),Wind Speed Variance,"
 					+ "horizontal wind direction,rotation to zero w(theta),rotation to zero v(phi)\n");			
 			for (CO2data aPoint: listOfPoints) {
@@ -367,60 +373,6 @@ public class ExtractCO2data {
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
-
-
-
-
-		//    startTime = System.currentTimeMillis();
-		//	listOfPoints = samplesInRegionAverage.countOccurrencesInParallel(folder, region1);
-		//	stopTime = System.currentTimeMillis();
-		//	totalTime = (stopTime - startTime);
-		//	System.out.println("Fork / join process took " + totalTime + "ms");
-		//
-		//	try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("AveragesJulyRegion1.txt")))) {            
-		//		for (GeoPointCarbon aPoint: listOfPoints) {
-		//			writer.write(aPoint.getpressure() + "\t" + aPoint.gettemperature() + "\t" + aPoint.getXco2() + "\t" + aPoint.getDate() +"\n");
-		//			//average += aPoint.getXco2();
-		//		}
-		//		//writer.write(region1.regionCenter().getpressure() + "\t" + region1.regionCenter().gettemperature() + "\t" + average/listOfPoints.size() +"\n");
-		//	} catch (IOException ex) {
-		//		ex.printStackTrace();
-		//	}
-		//	
-		//	startTime = System.currentTimeMillis();
-		//	listOfPoints.clear();
-		//	listOfPoints = samplesInRegionAverage.countOccurrencesInParallel(folder, region2);
-		//	stopTime = System.currentTimeMillis();
-		//	totalTime = (stopTime - startTime);
-		//	System.out.println("Fork / join process took " + totalTime + "ms");
-		//
-		//	try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("AveragesJulyRegion2.txt")))) {            
-		//		for (GeoPointCarbon aPoint: listOfPoints) {
-		//			writer.write(aPoint.getpressure() + "\t" + aPoint.gettemperature() + "\t" + aPoint.getXco2() + "\t" + aPoint.getDate() +"\n");
-		//			//average += aPoint.getXco2();
-		//		}
-		//		//writer.write(region1.regionCenter().getpressure() + "\t" + region1.regionCenter().gettemperature() + "\t" + average/listOfPoints.size() +"\n");
-		//	} catch (IOException ex) {
-		//		ex.printStackTrace();
-		//	}
-		//	
-		//	startTime = System.currentTimeMillis();
-		//	listOfPoints.clear();
-		//	listOfPoints = samplesInRegionAverage.countOccurrencesInParallel(folder, region3);
-		//	stopTime = System.currentTimeMillis();
-		//	totalTime = (stopTime - startTime);
-		//	System.out.println("Fork / join process took " + totalTime + "ms");
-		//
-		//	try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("AveragesJulyRegion3.txt")))) {            
-		//		for (GeoPointCarbon aPoint: listOfPoints) {
-		//			writer.write(aPoint.getpressure() + "\t" + aPoint.gettemperature() + "\t" + aPoint.getXco2() + "\t" + aPoint.getDate() +"\n");
-		//			//average += aPoint.getXco2();
-		//		}
-		//		//writer.write(region1.regionCenter().getpressure() + "\t" + region1.regionCenter().gettemperature() + "\t" + average/listOfPoints.size() +"\n");
-		//	} catch (IOException ex) {
-		//		ex.printStackTrace();
-		//	}
-
 
 	}
 

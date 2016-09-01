@@ -3,6 +3,7 @@ package arm.co2data;
 public class CO2data {
 
 	private String date;
+	private float dateRaw;
 	private float co2_flux;
 	private float co2_density;
 	private boolean co2_density_variance;
@@ -22,6 +23,22 @@ public class CO2data {
 			WindArm wind) {
 		super();
 		this.date = date;
+		this.co2_flux = co2_flux;
+		this.co2_density = co2_density;
+		this.co2_density_variance = co2_density_variance;
+		this.h2o_density = h2o_density;
+		this.h2o_density_variance = h2o_density_variance;
+		this.temperature = temperature;
+		this.temperature_variance = temperature_variance;
+		this.pressure = pressure;
+		this.wind = wind;
+	}
+	
+	public CO2data(float dateRaw, float co2_flux, float co2_density, boolean co2_density_variance, float h2o_density,
+			boolean h2o_density_variance, float temperature, boolean temperature_variance, float pressure,
+			WindArm wind) {
+		super();
+		this.dateRaw = dateRaw;
 		this.co2_flux = co2_flux;
 		this.co2_density = co2_density;
 		this.co2_density_variance = co2_density_variance;
@@ -111,5 +128,13 @@ public class CO2data {
 
 	public void setWind(WindArm wind) {
 		this.wind = wind;
+	}
+
+	public float getDateRaw() {
+		return dateRaw;
+	}
+
+	public void setDateRaw(float dateRaw) {
+		this.dateRaw = dateRaw;
 	}
 }

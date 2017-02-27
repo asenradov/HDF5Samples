@@ -13,6 +13,9 @@ public class CO2data {
 	private boolean temperature_variance;
 	private float pressure;
 	private WindArm wind;
+	private float h;
+	private float le;
+	private float ustar;
 		
 	public CO2data() {
 		super();
@@ -48,6 +51,25 @@ public class CO2data {
 		this.temperature_variance = temperature_variance;
 		this.pressure = pressure;
 		this.wind = wind;
+	}
+
+	public CO2data(String date, float co2_flux, float co2_density, boolean co2_density_variance, float h2o_density,
+			boolean h2o_density_variance, float temperature, boolean temperature_variance, float pressure, WindArm wind,
+			float h, float le, float ustar) {
+		super();
+		this.date = date;
+		this.co2_flux = co2_flux;
+		this.co2_density = co2_density;
+		this.co2_density_variance = co2_density_variance;
+		this.h2o_density = h2o_density;
+		this.h2o_density_variance = h2o_density_variance;
+		this.temperature = temperature;
+		this.temperature_variance = temperature_variance;
+		this.pressure = pressure;
+		this.wind = wind;
+		this.h = h;
+		this.le = le;
+		this.ustar = ustar;
 	}
 
 	public String getDate() {
@@ -137,4 +159,30 @@ public class CO2data {
 	public void setDateRaw(float dateRaw) {
 		this.dateRaw = dateRaw;
 	}
+
+	public float getH() {
+		return h;
+	}
+
+	public void setH(float h) {
+		this.h = h;
+	}
+
+	public float getLe() {
+		return le;
+	}
+
+	public void setLe(float le) {
+		this.le = le;
+	}
+
+	public float getUstar() {
+		return ustar;
+	}
+
+	public void setUstar(float ustar) {
+		this.ustar = ustar;
+	}
+	
+	
 }

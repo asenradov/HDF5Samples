@@ -33,7 +33,20 @@ public class SamplesInRegionAverageLiteARM {
 	final float TEMP_VIRTUAL = 36.313076f;
 	final float PRESSURE = 97.88957f;
 	final static String COMMA_DELIMITER = ",";
-	final static String dataARM = "1080.0955,36.313076,97.88957,8.063136,184.82767,3.2256176,4.827634";
+	final static String CO2flux10_30_14 = "-0.37016672";
+	final static String dataARM10_30_14 = "590.2108,26.63436,98.207855,6.0445085,345.4343,0.8844815,165.43428,188.17107,110.652725,0.5732205";	
+	final static String CO2flux11_24_14 = "-3.80197";
+	final static String dataARM11_24_14 = "295.78152,18.863642,97.46497,7.9659395,310.0531,0.7793405,130.05309,86.697334,162.77347,0.53519064";	
+	final static String CO2flux1_25_15 = "0.23837301";
+	final static String dataARM1_25_15 = "385.42728,18.927473,97.667015,10.068114,338.97757,1.3214552,158.97755,197.4396,53.425175,0.80239236";	
+	final static String CO2flux2_10_15 = "-6.413154";
+	final static String dataARM2_10_15 = "536.54987,20.866646,97.397316,3.3363352,195.27713,2.0673447,15.277129,96.601944,112.26471,0.03744782";
+	final static String CO2flux2_19_15 = "-1.5377989";
+	final static String dataARM2_19_15 = "286.9856,13.860731,98.173645,7.453293,153.72119,1.9821883,26.278805,266.75256,62.30421,0.5299035";
+	final static String CO2flux6_20_15 = "-8.103491";
+	final static String dataARM6_20_15 = "913.2949,37.195118,97.34435,9.76823,194.45235,2.3971076,14.452333,251.24135,321.2902,0.6969025";
+	final static String CO2flux7_11_15 = "4.7776566";
+	final static String dataARM7_11_15 = "1080.0955,36.313076,97.88957,8.063136,184.82767,3.2256176,4.827634,130.08003,162.73424,0.45018443";
 
 	List<GeoPointCarbon> occurrencesToList(Document document, Region region) {
 
@@ -164,7 +177,8 @@ public class SamplesInRegionAverageLiteARM {
 				String date = get_date(time_data[i]);
 				
 				if (region.inRegion(latitude_data[i], longitude_data[i]) && warn_level_data[i] <= 15
-						&& date.startsWith("7/11/2015")) {				
+						&& (date.startsWith("10/30/2014") || date.startsWith("11/24/2014") || date.startsWith("1/25/2015") || date.startsWith("2/10/2015")
+								|| date.startsWith("2/19/2015") || date.startsWith("6/20/2015") || date.startsWith("7/11/2015"))) {				
 					listOfPoints.add(new GeoPointCarbon(latitude_data[i],longitude_data[i],date, 
 							get_co2_in_mol(xco2_data[i], PRESSURE, get_dry_air_temp(HUMIDITY, PRESSURE, TEMP_VIRTUAL))));
 				}
@@ -238,7 +252,8 @@ public class SamplesInRegionAverageLiteARM {
 
 		long seconds = (long)f;
 		Date date = new Date(seconds * 1000);
-		SimpleDateFormat sdf = new SimpleDateFormat("M/d/YYYY H:mm");
+		SimpleDateFormat sdf = new SimpleDateFormat("M/d/YYYY");
+		//SimpleDateFormat sdf = new SimpleDateFormat("M/d/YYYY H:mm");
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 		return sdf.format(date);
 	}
@@ -334,12 +349,33 @@ public class SamplesInRegionAverageLiteARM {
 		totalTime = (stopTime - startTime);
 		System.out.println("Fork / join process took " + totalTime + "ms");
 		
-		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("7-11-15-OCO2LiteOklahomaToMol.csv")))) {            
-			writer.write("Date (M/d/YYYY H:mm),CO2(mmol m-3),H2O(mmol m-3),Temperature(degree C),Pressure(kPa),Wind Speed(m s-1),"
-					+ "horizontal wind direction,rotation to zero w(theta),rotation to zero v(phi)\n");			
+		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("OCO2LiteOklahomaToMolCoLocated.csv")))) {            
+			writer.write("Date (M/d/yyyy H:mm),CO2 Flux(umol m-2 s-1),CO2(mmol m-3),CO2 Variance,H2O(mmol m-3),H2O Variance,Temperature(degree C),"
+					+ "Temperature Variance,Pressure(kPa),Wind Speed(m s-1),Wind Speed Variance,"
+					+ "horizontal wind direction,rotation to zero w(theta),rotation to zero v(phi),"
+					+ "sensible heat flux(W m-2),latent heat flux(W m-2),friction velocity(m s-1)\n");		
 			for (GeoPointCarbon aPoint: listOfPoints) {
 				
-				writer.write(aPoint.getDate() + COMMA_DELIMITER + aPoint.getXco2() + COMMA_DELIMITER + dataARM + "\n");
+				String date = aPoint.getDate();
+				
+				if(date.startsWith("10/30/2014")) {
+					writer.write(date + " 19:30"+ COMMA_DELIMITER + CO2flux10_30_14 + COMMA_DELIMITER + aPoint.getXco2() + COMMA_DELIMITER + dataARM10_30_14 + "\n");
+				} else if (date.startsWith("11/24/2014")) {
+					writer.write(date + " 19:30"+ COMMA_DELIMITER + CO2flux11_24_14 + COMMA_DELIMITER + aPoint.getXco2() + COMMA_DELIMITER + dataARM11_24_14 + "\n");
+				} else if (date.startsWith("1/25/2015")) {
+					writer.write(date + " 19:30"+ COMMA_DELIMITER + CO2flux1_25_15 + COMMA_DELIMITER + aPoint.getXco2() + COMMA_DELIMITER + dataARM1_25_15 + "\n");
+				} else if (date.startsWith("2/10/2015")) {
+					writer.write(date + " 19:30"+ COMMA_DELIMITER + CO2flux2_10_15 + COMMA_DELIMITER + aPoint.getXco2() + COMMA_DELIMITER + dataARM2_10_15 + "\n");
+				} else if (date.startsWith("2/19/2015")) {
+					writer.write(date + " 19:30"+ COMMA_DELIMITER + CO2flux2_19_15 + COMMA_DELIMITER + aPoint.getXco2() + COMMA_DELIMITER + dataARM2_19_15 + "\n");
+				} else if (date.startsWith("6/20/2015")) {
+					writer.write(date + " 19:30"+ COMMA_DELIMITER + CO2flux6_20_15 + COMMA_DELIMITER + aPoint.getXco2() + COMMA_DELIMITER + dataARM6_20_15 + "\n");
+				} else if (date.startsWith("7/11/2015")) {
+					writer.write(date + " 19:30"+ COMMA_DELIMITER + CO2flux7_11_15 + COMMA_DELIMITER + aPoint.getXco2() + COMMA_DELIMITER + dataARM7_11_15 + "\n");
+				} else {
+					// should never drop here
+					System.out.println("Error!!");
+				}
 			}
 		} catch (IOException ex) {
 			ex.printStackTrace();

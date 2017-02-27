@@ -48,6 +48,9 @@ public class ExtractCO2data {
 		String DATASETNAME_WIND_DIR_PHI = "phi";
 		String DATASETNAME_TIME = "base_time";
 		String DATASETNAME_TIME_OFFSET = "time_offset";
+		String DATASETNAME_H = "h";
+		String DATASETNAME_LE = "le";
+		String DATASETNAME_USTAR = "ustar";
 
 		NetcdfFile ncfile = null;
 		Variable pressure = null;
@@ -65,6 +68,9 @@ public class ExtractCO2data {
 		Variable wind_dir_phi = null;
 		Variable time = null;
 		Variable time_offset = null;
+		Variable h = null;
+		Variable le = null;
+		Variable ustar = null;
 		Array pressure_data;
 		Array temperature_data;
 		Array var_temperature_data;
@@ -79,6 +85,9 @@ public class ExtractCO2data {
 		Array wind_dir_theta_data;
 		Array wind_dir_phi_data;
 		Array time_offset_data;
+		Array h_data;
+		Array le_data;
+		Array ustar_data;
 		int base_time;
 
 		List<CO2data> listOfPoints = new ArrayList<>();
@@ -104,6 +113,9 @@ public class ExtractCO2data {
 			wind_dir_phi = ncfile.findVariable(DATASETNAME_WIND_DIR_PHI);
 			time = ncfile.findVariable(DATASETNAME_TIME);
 			time_offset = ncfile.findVariable(DATASETNAME_TIME_OFFSET);
+			h = ncfile.findVariable(DATASETNAME_H);
+			le = ncfile.findVariable(DATASETNAME_LE);
+			ustar = ncfile.findVariable(DATASETNAME_USTAR);
 
 			// Read the data using the default properties.		
 			pressure_data = pressure.read();
@@ -121,6 +133,9 @@ public class ExtractCO2data {
 			wind_dir_phi_data = wind_dir_phi.read();
 			base_time = time.readScalarInt();
 			time_offset_data = time_offset.read();
+			h_data = h.read();
+			le_data = le.read();
+			ustar_data = ustar.read();
 
 			// Process data	
 			IndexIterator co2flux_ii = co2flux_data.getIndexIterator();
@@ -137,6 +152,9 @@ public class ExtractCO2data {
 			IndexIterator wind_dir_phi_ii = wind_dir_phi_data.getIndexIterator();
 			IndexIterator temperature_ii = temperature_data.getIndexIterator();
 			IndexIterator var_temperature_ii = var_temperature_data.getIndexIterator();
+			IndexIterator h_ii = h_data.getIndexIterator();
+			IndexIterator le_ii = le_data.getIndexIterator();
+			IndexIterator ustar_ii = ustar_data.getIndexIterator();
 			
 			while (co2flux_ii.hasNext()) {	
 				
@@ -157,7 +175,8 @@ public class ExtractCO2data {
 						largeTemperatureVariance(temperature_ii.getFloatCurrent(),var_temperature_ii.getFloatNext()),
 						presure_ii.getFloatNext(),new WindArm(wind_speed_ii.getFloatNext(),
 								largeWindVariance(wind_speed_ii.getFloatCurrent(),var_wind_speed_ii.getFloatNext()),
-								wind_dir_horiz_ii.getFloatNext(),wind_dir_theta_ii.getFloatNext(),wind_dir_phi_ii.getFloatNext())));
+								wind_dir_horiz_ii.getFloatNext(),wind_dir_theta_ii.getFloatNext(),wind_dir_phi_ii.getFloatNext()),
+						h_ii.getFloatNext(),le_ii.getFloatNext(), ustar_ii.getFloatNext()));
 				
 				
 //				float dry_air_temp = get_dry_air_temp(h2o_ii.getFloatNext(), var_h2o_ii.getFloatNext(), presure_ii.getFloatNext(),
@@ -347,10 +366,11 @@ public class ExtractCO2data {
 		totalTime = (stopTime - startTime);
 		System.out.println("Fork / join process took " + totalTime + "ms");
 
-		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("ARM60mJan2001Jul2015Oklahoma.csv")))) {            
+		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("ARM4mDec2002Jul2015OklahomaV2.csv")))) {            
 			writer.write("Date (M/d/yyyy H:mm),CO2 Flux(umol m-2 s-1),CO2(mmol m-3),CO2 Variance,H2O(mmol m-3),H2O Variance,Temperature(degree C),"
 					+ "Temperature Variance,Pressure(kPa),Wind Speed(m s-1),Wind Speed Variance,"
-					+ "horizontal wind direction,rotation to zero w(theta),rotation to zero v(phi)\n");			
+					+ "horizontal wind direction,rotation to zero w(theta),rotation to zero v(phi),"
+					+ "sensible heat flux(W m-2),latent heat flux(W m-2),friction velocity(m s-1)\n");			
 			for (CO2data aPoint: listOfPoints) {
 				String co2_var = "";
 				String h2o_var = "";
@@ -368,7 +388,8 @@ public class ExtractCO2data {
 				
 				writer.write(aPoint.getDate() + COMMA_DELIMITER + aPoint.getCo2_flux() + COMMA_DELIMITER + aPoint.getCo2_density() + COMMA_DELIMITER +
 						co2_var + COMMA_DELIMITER + aPoint.getH2o_density() + COMMA_DELIMITER + h2o_var + COMMA_DELIMITER + aPoint.getTemperature() + 
-						COMMA_DELIMITER + temp_var + COMMA_DELIMITER + aPoint.getPressure() + COMMA_DELIMITER + aPoint.getWind().toString() + "\n");
+						COMMA_DELIMITER + temp_var + COMMA_DELIMITER + aPoint.getPressure() + COMMA_DELIMITER + aPoint.getWind().toString() + 
+						COMMA_DELIMITER + aPoint.getH() + COMMA_DELIMITER + aPoint.getLe() + COMMA_DELIMITER + aPoint.getUstar() + "\n");
 			}
 		} catch (IOException ex) {
 			ex.printStackTrace();

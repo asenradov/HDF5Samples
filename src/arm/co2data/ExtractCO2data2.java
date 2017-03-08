@@ -41,7 +41,7 @@ public class ExtractCO2data2 {
 		//String VARIANCE_TEMP = "var_t";
 		String DATASETNAME_H2O = "h2o_molar_density";
 		//String VARIANCE_H2O = "var_q";
-		String DATASETNAME_WIND_SPEED = "wind_speed	";
+		String DATASETNAME_WIND_SPEED = "wind_speed";
 		//String VARIANCE_WIND_SPEED = "var_rot_u";
 		String DATASETNAME_WIND_DIR_HORIZ = "wind_direction";
 		String DATASETNAME_WIND_DIR_THETA = "yaw";
@@ -196,7 +196,7 @@ public class ExtractCO2data2 {
 	public static String get_date(long f) {
 
 		long seconds = (long)f;
-		Date date = new Date(seconds * 1000);
+		Date date = new Date(seconds * 1000 - 900000);
 		SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy H:mm");
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 		return sdf.format(date);
@@ -293,8 +293,12 @@ public class ExtractCO2data2 {
 	
 	// Convert temperature from Kelvin to Celsius
 	private float getTemp(float temp) {
-		float result = 0;
-		result = (float) (temp - 273.15);
+		float result = -9999;
+		if(temp == -9999) {
+			return result;
+		} else {
+			result = (float) (temp - 273.15);
+		}
 		return result;
 	}	
 
@@ -377,7 +381,7 @@ public class ExtractCO2data2 {
 		totalTime = (stopTime - startTime);
 		System.out.println("Fork / join process took " + totalTime + "ms");
 
-		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("ARM4mJul2015Feb2017OklahomaV2.csv")))) {            
+		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("ARM4mJul2015Jan2017OklahomaV2.csv")))) {            
 			writer.write("Date (M/d/yyyy H:mm),CO2 Flux(umol m-2 s-1),CO2(mmol m-3),CO2 Variance,H2O(mmol m-3),H2O Variance,Temperature(degree C),"
 					+ "Temperature Variance,Pressure(kPa),Wind Speed(m s-1),Wind Speed Variance,"
 					+ "horizontal wind direction,rotation to zero w(theta),rotation to zero v(phi),"

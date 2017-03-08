@@ -27,7 +27,8 @@ public class Folder {
         for (File entry : dir.listFiles()) {
             if (entry.isDirectory()) {
                 subFolders.add(Folder.fromDirectory(entry));    
-            } else if (entry.isFile() && (entry.getName().endsWith(".nc4") || entry.getName().endsWith(".cdf"))){
+            } else if (entry.isFile() && (entry.getName().endsWith(".nc") ||
+            		entry.getName().endsWith(".nc4") || entry.getName().endsWith(".cdf"))){
                 documents.add(new Document(entry.getPath()));
             }
         }
